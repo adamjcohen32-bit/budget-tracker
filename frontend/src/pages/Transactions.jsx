@@ -69,7 +69,7 @@ export default function Transactions() {
       </div>
 
       {showAdd && (
-        <form onSubmit={handleAdd} className="rounded-xl bg-gray-900 border border-gray-800 p-4 grid grid-cols-4 gap-3">
+        <form onSubmit={handleAdd} className="rounded-xl bg-gray-900 border border-gray-800 p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <input
             type="number"
             placeholder="Amount"
@@ -106,7 +106,7 @@ export default function Transactions() {
           <button
             type="submit"
             disabled={saving}
-            className="col-span-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg py-2 text-sm font-medium disabled:opacity-50"
+            className="col-span-2 sm:col-span-4 bg-indigo-600 hover:bg-indigo-500 rounded-lg py-2 text-sm font-medium disabled:opacity-50"
           >
             {saving ? 'Saving...' : 'Add transaction'}
           </button>
@@ -121,45 +121,55 @@ export default function Transactions() {
         className="w-full bg-gray-900 border border-gray-800 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-500"
       />
 
-      <div className="rounded-xl overflow-hidden border border-gray-800">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-900 text-gray-500 text-xs uppercase tracking-wider">
-            <tr>
-              <th className="text-left px-4 py-3">Date</th>
-              <th className="text-left px-4 py-3">Merchant</th>
-              <th className="text-left px-4 py-3">Category</th>
-              <th className="text-right px-4 py-3">Amount</th>
-              <th className="text-right px-4 py-3">Source</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800">
-            {filtered.length === 0 && (
-              <tr>
-                <td colSpan={6} className="text-center text-gray-500 py-12">
-                  No transactions yet
-                </td>
-              </tr>
-            )}
-            {filtered.map((txn) => (
-              <tr key={txn.id} className={clsx(
-                'transition-colors',
-                txn.excluded ? 'bg-gray-950/50 hover:bg-gray-900' : 'bg-gray-950 hover:bg-gray-900'
-              )}>
-                <td className="px-4 py-3 text-gray-400">{txn.date}</td>
-                <td className={clsx('px-4 py-3 font-medium', txn.excluded ? 'text-gray-500' : 'text-white')}>
+      {filtered.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-gray-800 text-center text-gray-500 py-12">
+          No transactions yet
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {filtered.map((txn) => (
+            <div
+              key={txn.id}
+              className={clsx(
+                'rounded-xl border p-4 flex flex-col gap-2.5',
+                txn.excluded ? 'bg-gray-950/40 border-gray-800/70' : 'bg-gray-900 border-gray-800'
+              )}
+            >
+              {/* Line 1: merchant + amount */}
+              <div className="flex items-center justify-between gap-3">
+                <span className={clsx('font-medium truncate', txn.excluded ? 'text-gray-500' : 'text-white')}>
                   {txn.merchant_name || txn.description || '—'}
-                </td>
-                <td className="px-4 py-3">
+                </span>
+                <span className={clsx(
+                  'font-semibold tabular-nums whitespace-nowrap',
+                  txn.excluded ? 'text-gray-500' : 'text-white'
+                )}>
+                  {fmt(txn.amount)}
+                </span>
+              </div>
+
+              {/* Line 2: date/source + category + actions */}
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span>{txn.date}</span>
+                  <span className={clsx(
+                    'px-1.5 py-0.5 rounded',
+                    txn.source === 'plaid' ? 'bg-blue-900/40 text-blue-300' : 'bg-gray-800 text-gray-400'
+                  )}>
+                    {txn.source}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
                   {txn.excluded ? (
-                    <span className="text-xs px-2 py-0.5 rounded bg-gray-800 text-gray-500">
+                    <span className="text-xs px-2 py-1 rounded bg-gray-800 text-gray-500">
                       {txn.pfc_primary === 'INCOME' ? 'Income' : 'Transfer / payment'}
                     </span>
                   ) : (
                     <select
                       value={txn.category_id || ''}
                       onChange={(e) => handleRecategorize(txn.id, e.target.value)}
-                      className="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-200"
+                      className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-xs text-gray-200 max-w-[160px]"
                     >
                       <option value="">Uncategorized</option>
                       {categories.map((c) => (
@@ -167,43 +177,27 @@ export default function Transactions() {
                       ))}
                     </select>
                   )}
-                </td>
-                <td className={clsx(
-                  'px-4 py-3 text-right font-medium',
-                  txn.excluded ? 'text-gray-500' : 'text-white'
-                )}>
-                  {fmt(txn.amount)}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <span className={clsx(
-                    'text-xs px-2 py-0.5 rounded',
-                    txn.source === 'plaid' ? 'bg-blue-900/50 text-blue-300' : 'bg-gray-800 text-gray-400'
-                  )}>
-                    {txn.source}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-right whitespace-nowrap">
                   <button
                     onClick={() => handleToggleExcluded(txn.id, !txn.excluded)}
-                    title={txn.excluded ? 'Count this toward budgets' : 'Exclude from budgets (income/transfer)'}
-                    className="text-gray-600 hover:text-indigo-400 text-xs transition-colors mr-3"
+                    title={txn.excluded ? 'Count this toward budgets' : 'Exclude from budgets'}
+                    className="text-gray-500 hover:text-indigo-400 text-xs transition-colors px-1"
                   >
                     {txn.excluded ? 'Include' : 'Exclude'}
                   </button>
                   {txn.source === 'manual' && (
                     <button
                       onClick={() => handleDelete(txn.id)}
-                      className="text-gray-600 hover:text-red-400 text-xs transition-colors"
+                      className="text-gray-600 hover:text-red-400 text-xs transition-colors px-1"
                     >
                       ✕
                     </button>
                   )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
