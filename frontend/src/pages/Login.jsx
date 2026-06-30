@@ -28,10 +28,23 @@ export default function Login({ onSuccess }) {
           <span className="text-2xl font-bold text-indigo-400 tracking-tight">Tracker</span>
         </div>
         <form onSubmit={submit} className="rounded-2xl bg-gray-900 border border-gray-800 p-6 space-y-4">
+          {/* Hidden username so iOS/Keychain saves & autofills the password */}
+          <input
+            type="text"
+            name="username"
+            autoComplete="username"
+            defaultValue="budget"
+            readOnly
+            tabIndex={-1}
+            aria-hidden="true"
+            className="sr-only"
+          />
           <label className="block">
             <span className="text-sm text-gray-400 mb-2 block">Enter your password</span>
             <input
               type="password"
+              name="password"
+              autoComplete="current-password"
               autoFocus
               value={password}
               onChange={(e) => setPassword(e.target.value)}
