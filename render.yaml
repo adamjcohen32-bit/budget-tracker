@@ -1,0 +1,34 @@
+# Render Blueprint — deploys the whole app as one free web service.
+# In Render: New + → Blueprint → connect this repo → it reads this file.
+services:
+  - type: web
+    name: budget-tracker
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
+    startCommand: cd backend && node src/index.js
+    envVars:
+      # Set these in the Render dashboard (sync:false = you enter them manually)
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: PLAID_CLIENT_ID
+        sync: false
+      - key: PLAID_SECRET
+        sync: false
+      - key: PLAID_ENV
+        value: sandbox
+      - key: RESEND_API_KEY
+        sync: false
+      - key: ALERT_EMAIL
+        value: adamjcohen32@gmail.com
+      - key: ALERT_FROM
+        value: Budget Tracker <onboarding@resend.dev>
+      # The password you'll type to unlock the app on your phone
+      - key: APP_PASSWORD
+        sync: false
+      # Auto-generated session token (you don't need to set this)
+      - key: SESSION_SECRET
+        generateValue: true
