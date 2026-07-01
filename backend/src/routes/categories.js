@@ -1,18 +1,16 @@
 import { Router } from 'express';
 import supabase from '../db/supabase.js';
 import { checkAndSendAlerts } from '../services/alertService.js';
+import { monthStartET, todayET, daysInMonthET, etParts } from '../utils/date.js';
 
 const router = Router();
 
-// Get all active categories with current month spend
+// Get all active categories with current month spend (Eastern time)
 router.get('/', async (req, res) => {
-  const now = new Date();
-  const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-    .toISOString()
-    .split('T')[0];
-  const endDate = now.toISOString().split('T')[0];
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const dayOfMonth = now.getDate();
+  const startDate = monthStartET();
+  const endDate = todayET();
+  const daysInMonth = daysInMonthET();
+  const dayOfMonth = etParts().day;
 
   const { data: categories, error: catErr } = await supabase
     .from('categories')

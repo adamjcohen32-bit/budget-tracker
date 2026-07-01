@@ -6,6 +6,7 @@ import {
 } from '../services/plaidService.js';
 import { upsertTransactions } from '../services/categorizationService.js';
 import supabase from '../db/supabase.js';
+import { monthStartET, todayET } from '../utils/date.js';
 
 const router = Router();
 
@@ -67,11 +68,8 @@ router.post('/sync', async (req, res) => {
       return res.status(400).json({ error: 'No Plaid account connected' });
     }
 
-    const now = new Date();
-    const startDate = new Date(now.getFullYear(), now.getMonth(), 1)
-      .toISOString()
-      .split('T')[0];
-    const endDate = now.toISOString().split('T')[0];
+    const startDate = monthStartET();
+    const endDate = todayET();
 
     const transactions = await fetchTransactions(
       settings.plaid_access_token,

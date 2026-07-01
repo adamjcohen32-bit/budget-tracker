@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import supabase from '../db/supabase.js';
+import { monthYearET } from '../utils/date.js';
 import 'dotenv/config';
 
 // Resend is optional — only instantiate if a key is configured, so the
@@ -11,8 +12,7 @@ const ALERT_EMAIL = process.env.ALERT_EMAIL || 'adamjcohen32@gmail.com';
 const ALERT_FROM = process.env.ALERT_FROM || 'Budget Tracker <onboarding@resend.dev>';
 
 function currentMonthYear() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+  return monthYearET();
 }
 
 // Check all categories and fire alerts if thresholds crossed and not yet sent

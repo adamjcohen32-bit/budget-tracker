@@ -5,6 +5,7 @@ import QuickAddExpense from '../components/ui/QuickAddExpense.jsx';
 import SpendingBreakdown from '../components/ui/SpendingBreakdown.jsx';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton.jsx';
 import useCountUp from '../hooks/useCountUp.js';
+import { daysLeftInMonthET, monthNameET } from '../utils/date.js';
 import clsx from 'clsx';
 
 function fmt(n) {
@@ -49,10 +50,8 @@ export default function Dashboard() {
   const totalSpent = categories.reduce((s, c) => s + (c.spent || 0), 0);
   const hasSpending = totalSpent > 0;
 
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const daysLeft = daysInMonth - now.getDate() + 1;
-  const monthName = now.toLocaleString('default', { month: 'long' });
+  const daysLeft = daysLeftInMonthET();
+  const monthName = monthNameET();
 
   return (
     <div className="space-y-8">

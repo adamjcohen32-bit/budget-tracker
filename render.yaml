@@ -9,6 +9,10 @@ services:
     buildCommand: cd frontend && npm install && npm run build && cd ../backend && npm install
     startCommand: cd backend && node src/index.js
     envVars:
+      # Pin the server clock to Eastern (belt-and-suspenders; date logic is
+      # already timezone-explicit in code)
+      - key: TZ
+        value: America/New_York
       # Set these in the Render dashboard (sync:false = you enter them manually)
       - key: SUPABASE_URL
         sync: false

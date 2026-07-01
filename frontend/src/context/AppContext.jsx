@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { categoriesApi, settingsApi, transactionsApi, goalsApi, plaidApi } from '../services/api.js';
+import { daysInMonthET, daysLeftInMonthET } from '../utils/date.js';
 
 const AppContext = createContext(null);
 
@@ -56,10 +57,9 @@ export function AppProvider({ children }) {
     }
   }, [loading, settings, syncTransactions]);
 
-  // Derived: discretionary budget remaining and daily spend number
-  const now = new Date();
-  const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const daysLeft = daysInMonth - now.getDate() + 1;
+  // Derived: discretionary budget remaining and daily spend number (Eastern time)
+  const daysInMonth = daysInMonthET();
+  const daysLeft = daysLeftInMonthET();
 
   const discretionaryCategories = categories.filter(
     (c) => c.type === 'discretionary'

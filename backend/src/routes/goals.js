@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import supabase from '../db/supabase.js';
+import { etParts } from '../utils/date.js';
 
 const router = Router();
 
 // Get all active goals with derived progress + pace
 router.get('/', async (req, res) => {
-  const now = new Date();
-  const monthsRemainingInYear = 12 - now.getMonth(); // includes current month
+  // month is 1-based; months remaining in year including current month
+  const monthsRemainingInYear = 12 - etParts().month + 1;
 
   const { data: goals, error } = await supabase
     .from('goals')

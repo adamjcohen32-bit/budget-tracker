@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import { transactionsApi } from '../services/api.js';
+import { todayET } from '../utils/date.js';
 import clsx from 'clsx';
 
 function fmt(n) {
@@ -14,7 +15,7 @@ export default function Transactions() {
   const [form, setForm] = useState({
     amount: '',
     merchant_name: '',
-    date: new Date().toISOString().split('T')[0],
+    date: todayET(),
     category_id: '',
   });
   const [saving, setSaving] = useState(false);

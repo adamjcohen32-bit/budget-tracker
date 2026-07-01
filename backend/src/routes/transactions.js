@@ -1,15 +1,13 @@
 import { Router } from 'express';
 import supabase from '../db/supabase.js';
+import { monthStartET, todayET } from '../utils/date.js';
 
 const router = Router();
 
 // Get all transactions (current month by default, or ?start=&end=)
 router.get('/', async (req, res) => {
-  const now = new Date();
-  const start =
-    req.query.start ||
-    new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
-  const end = req.query.end || now.toISOString().split('T')[0];
+  const start = req.query.start || monthStartET();
+  const end = req.query.end || todayET();
 
   const { data, error } = await supabase
     .from('transactions')

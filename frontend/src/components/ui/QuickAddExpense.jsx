@@ -2,9 +2,10 @@ import React, { useState, useRef } from 'react';
 import clsx from 'clsx';
 import { useApp } from '../../context/AppContext.jsx';
 import { transactionsApi } from '../../services/api.js';
+import { todayET } from '../../utils/date.js';
 
 function todayISO() {
-  return new Date().toISOString().split('T')[0];
+  return todayET();
 }
 
 export default function QuickAddExpense() {
