@@ -20,14 +20,40 @@ router.get('/', async (req, res) => {
   res.json(data);
 });
 
-// Manual transaction entry
+// Manual transaction entry.
+// Accepts either category_id (UUID) or category_name (resolved server-side),
+// and defaults the date to today (Eastern) — handy for the Siri Shortcut,
+// which just sends { amount, category_name, note }.
 router.post('/', async (req, res) => {
-  const { category_id, amount, merchant_name, description, date } = req.body;
-  if (!amount || !date) return res.status(400).json({ error: 'amount and date required' });
+  const { amount, merchant_name, description, note, date } = req.body;
+  let { category_id } = req.body;
+  if (amount == null || isNaN(Number(amount))) {
+    return res.status(400).json({ error: 'amount required' });
+  }
+
+  // Resolve category by name if an id wasn't provided
+  if (!category_id && req.body.category_name) {
+    const { data: cat } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('is_active', true)
+      .ilike('name', req.body.category_name.trim())
+      .maybeSingle();
+    if (cat) category_id = cat.id;
+  }
+
+  const row = {
+    category_id: category_id || null,
+    amount: Number(amount),
+    merchant_name: merchant_name || note || null,
+    description: description || null,
+    date: date || todayET(),
+    source: 'manual',
+  };
 
   const { data, error } = await supabase
     .from('transactions')
-    .insert({ category_id, amount, merchant_name, description, date, source: 'manual' })
+    .insert(row)
     .select()
     .single();
 
