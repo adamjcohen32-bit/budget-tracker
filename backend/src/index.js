@@ -8,6 +8,7 @@ import transactionRoutes from './routes/transactions.js';
 import categoryRoutes from './routes/categories.js';
 import settingsRoutes from './routes/settings.js';
 import goalRoutes from './routes/goals.js';
+import summaryRoutes from './routes/summary.js';
 import authRoutes from './routes/auth.js';
 import { requireAuth } from './middleware/auth.js';
 
@@ -29,6 +30,7 @@ app.use('/api/transactions', transactionRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/goals', goalRoutes);
+app.use('/api/summary', summaryRoutes);
 
 // In production, serve the built frontend from this same service so the
 // whole app lives at one URL (no CORS, one thing to deploy).

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
-import { categoriesApi, settingsApi, transactionsApi, goalsApi, plaidApi } from '../services/api.js';
+import { categoriesApi, settingsApi, transactionsApi, goalsApi, plaidApi, summaryApi } from '../services/api.js';
 import { daysInMonthET, daysLeftInMonthET } from '../utils/date.js';
 
 const AppContext = createContext(null);
@@ -9,22 +9,25 @@ export function AppProvider({ children }) {
   const [transactions, setTransactions] = useState([]);
   const [settings, setSettings] = useState(null);
   const [goals, setGoals] = useState([]);
+  const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState(null);
 
   const loadAll = useCallback(async () => {
     try {
-      const [cats, txns, sett, gls] = await Promise.all([
+      const [cats, txns, sett, gls, sum] = await Promise.all([
         categoriesApi.list(),
         transactionsApi.list(),
         settingsApi.get(),
         goalsApi.list(),
+        summaryApi.get(),
       ]);
       setCategories(cats);
       setTransactions(txns);
       setSettings(sett);
       setGoals(gls);
+      setSummary(sum);
     } catch (err) {
       setError('Failed to load data. Is the backend running?');
     } finally {
@@ -92,6 +95,7 @@ export function AppProvider({ children }) {
         setSettings,
         goals,
         setGoals,
+        summary,
         loading,
         syncing,
         error,

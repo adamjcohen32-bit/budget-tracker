@@ -64,6 +64,10 @@ export const plaidApi = {
   sync: () => api.post('/api/plaid/sync').then(r => r.data),
 };
 
+export const summaryApi = {
+  get: () => api.get('/api/summary').then(r => r.data),
+};
+
 export const goalsApi = {
   list: () => api.get('/api/goals').then(r => r.data),
   create: (data) => api.post('/api/goals', data).then(r => r.data),
