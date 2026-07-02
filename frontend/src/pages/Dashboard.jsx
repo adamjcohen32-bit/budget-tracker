@@ -1,12 +1,11 @@
 import React from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import CategoryRow from '../components/ui/CategoryRow.jsx';
-import ProgressBar from '../components/ui/ProgressBar.jsx';
 import QuickAddExpense from '../components/ui/QuickAddExpense.jsx';
 import SpendingBreakdown from '../components/ui/SpendingBreakdown.jsx';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton.jsx';
 import useCountUp from '../hooks/useCountUp.js';
-import { monthNameET } from '../utils/date.js';
+import { monthNameET, daysInMonthET, etParts } from '../utils/date.js';
 import clsx from 'clsx';
 
 function fmt(n) {
@@ -55,42 +54,29 @@ export default function Dashboard() {
 
   const monthName = monthNameET();
 
-  // Compare actual spending to your budget (what you should ideally spend).
-  // Budget = all spending categories (everything except savings goals).
-  const monthlyBudget = categories
-    .filter((c) => c.type !== 'savings')
-    .reduce((s, c) => s + (c.budget_amount || 0), 0);
-  const budgetLeft = monthlyBudget - spentThis;
-  const spentPctOfBudget = monthlyBudget > 0 ? (spentThis / monthlyBudget) * 100 : 0;
-  const overBudget = spentThis > monthlyBudget;
+  // Projected month-end spend at the current pace (no budget calibration needed).
+  const dayOfMonth = etParts().day;
+  const daysInMonth = daysInMonthET();
+  const dailyAvg = dayOfMonth > 0 ? spentThis / dayOfMonth : 0;
+  const projectedSpend = dailyAvg * daysInMonth;
 
   return (
     <div className="space-y-8">
-      {/* Hero: Spent (vs budget) + Left to invest */}
+      {/* Hero: Spent (on-pace projection) + Left to invest */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Spent this month, measured against your budget */}
+        {/* Spent this month, with projected month-end pace */}
         <div className="rounded-2xl bg-gradient-to-br from-indigo-950 to-indigo-900/40 border border-indigo-800/70 p-7">
           <p className="text-sm text-indigo-300 font-medium mb-2">Spent in {monthName}</p>
           <p className="text-6xl font-bold tracking-tight tabular-nums leading-none text-white">
             {fmtFull(spentAnim)}
           </p>
-          {monthlyBudget > 0 ? (
-            <>
-              <ProgressBar pct={spentPctOfBudget} className="mt-4" />
-              <p className="text-xs mt-3 tabular-nums">
-                <span className="text-indigo-300/80">{fmtFull(spentThis)} of {fmtFull(monthlyBudget)} budgeted</span>
-                {' · '}
-                {overBudget ? (
-                  <span className="text-red-400">over by {fmtFull(spentThis - monthlyBudget)}</span>
-                ) : (
-                  <span className="text-emerald-300">{fmtFull(budgetLeft)} left to spend</span>
-                )}
-              </p>
-            </>
-          ) : (
-            <p className="text-xs text-indigo-400/70 mt-3">
-              Set budgets in Budget Settings to track against a target
+          {spentThis > 0 ? (
+            <p className="text-xs mt-3 tabular-nums text-indigo-300/80">
+              On pace for <span className="text-white font-medium">~{fmt(projectedSpend)}</span> this month
+              <span className="text-indigo-400/60"> · {fmt(dailyAvg)}/day</span>
             </p>
+          ) : (
+            <p className="text-xs mt-3 text-indigo-400/70">No spending logged yet this month</p>
           )}
         </div>
 
