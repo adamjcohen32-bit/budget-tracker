@@ -27,8 +27,18 @@ export default function Dashboard() {
   } = useApp();
 
   const spentThis = summary?.spent_this_month || 0;
-  const leftThis = summary?.left_this_month || 0;
   const takeHome = summary?.take_home || 0;
+
+  // "Left to invest" reserves your fixed bills (Tesla, Claude) up front, even
+  // if they haven't been paid/logged yet — that money is already committed.
+  const fixedBudget = categories
+    .filter((c) => c.type === 'fixed')
+    .reduce((s, c) => s + (c.budget_amount || 0), 0);
+  const fixedSpent = categories
+    .filter((c) => c.type === 'fixed')
+    .reduce((s, c) => s + (c.spent || 0), 0);
+  const reservedFixed = Math.max(0, fixedBudget - fixedSpent); // fixed not yet paid
+  const leftThis = takeHome - spentThis - reservedFixed;
 
   // Hooks must run before any early return
   const spentAnim = useCountUp(spentThis);
@@ -90,7 +100,8 @@ export default function Dashboard() {
             {leftThis < 0 ? '-' : ''}{fmtFull(Math.abs(leftAnim))}
           </p>
           <p className="text-xs text-gray-500 mt-3">
-            {fmtFull(spentThis)} spent of {fmtFull(takeHome)} take-home · rest is yours to invest
+            {fmtFull(takeHome)} take-home − {fmtFull(spentThis)} spent
+            {reservedFixed > 0 && <> − {fmtFull(reservedFixed)} fixed bills</>}
           </p>
         </div>
       </div>
