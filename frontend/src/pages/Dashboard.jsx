@@ -1,6 +1,7 @@
 import React from 'react';
 import { useApp } from '../context/AppContext.jsx';
 import CategoryRow from '../components/ui/CategoryRow.jsx';
+import ProgressBar from '../components/ui/ProgressBar.jsx';
 import QuickAddExpense from '../components/ui/QuickAddExpense.jsx';
 import SpendingBreakdown from '../components/ui/SpendingBreakdown.jsx';
 import DashboardSkeleton from '../components/ui/DashboardSkeleton.jsx';
@@ -29,7 +30,6 @@ export default function Dashboard() {
   const spentThis = summary?.spent_this_month || 0;
   const leftThis = summary?.left_this_month || 0;
   const takeHome = summary?.take_home || 0;
-  const lastToDate = summary?.spent_last_month_to_date || 0;
 
   // Hooks must run before any early return
   const spentAnim = useCountUp(spentThis);
@@ -55,50 +55,54 @@ export default function Dashboard() {
 
   const monthName = monthNameET();
 
-  // How this month's pace compares to the same point last month
-  const paceDelta = spentThis - lastToDate; // + = spending more than last month
-  const spentPctOfIncome = takeHome > 0 ? Math.min((spentThis / takeHome) * 100, 100) : 0;
+  // Compare actual spending to your budget (what you should ideally spend).
+  // Budget = all spending categories (everything except savings goals).
+  const monthlyBudget = categories
+    .filter((c) => c.type !== 'savings')
+    .reduce((s, c) => s + (c.budget_amount || 0), 0);
+  const budgetLeft = monthlyBudget - spentThis;
+  const spentPctOfBudget = monthlyBudget > 0 ? (spentThis / monthlyBudget) * 100 : 0;
+  const overBudget = spentThis > monthlyBudget;
 
   return (
     <div className="space-y-8">
-      {/* Hero: Spent this month + Left this month */}
+      {/* Hero: Spent (vs budget) + Left to invest */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Spent this month */}
+        {/* Spent this month, measured against your budget */}
         <div className="rounded-2xl bg-gradient-to-br from-indigo-950 to-indigo-900/40 border border-indigo-800/70 p-7">
           <p className="text-sm text-indigo-300 font-medium mb-2">Spent in {monthName}</p>
           <p className="text-6xl font-bold tracking-tight tabular-nums leading-none text-white">
             {fmtFull(spentAnim)}
           </p>
-          <p className="text-xs mt-3 tabular-nums">
-            {lastToDate > 0 ? (
-              <span className={paceDelta > 0 ? 'text-amber-300' : 'text-emerald-300'}>
-                {paceDelta >= 0 ? '↑' : '↓'} {fmtFull(Math.abs(paceDelta))}{' '}
-                <span className="text-indigo-400/70">
-                  {paceDelta >= 0 ? 'more than' : 'less than'} this point last month
-                </span>
-              </span>
-            ) : (
-              <span className="text-indigo-400/70">First month of tracking — no comparison yet</span>
-            )}
-          </p>
+          {monthlyBudget > 0 ? (
+            <>
+              <ProgressBar pct={spentPctOfBudget} className="mt-4" />
+              <p className="text-xs mt-3 tabular-nums">
+                <span className="text-indigo-300/80">{fmtFull(spentThis)} of {fmtFull(monthlyBudget)} budgeted</span>
+                {' · '}
+                {overBudget ? (
+                  <span className="text-red-400">over by {fmtFull(spentThis - monthlyBudget)}</span>
+                ) : (
+                  <span className="text-emerald-300">{fmtFull(budgetLeft)} left to spend</span>
+                )}
+              </p>
+            </>
+          ) : (
+            <p className="text-xs text-indigo-400/70 mt-3">
+              Set budgets in Budget Settings to track against a target
+            </p>
+          )}
         </div>
 
-        {/* Left this month */}
+        {/* Left to invest */}
         <div className="rounded-2xl bg-gray-900 border border-gray-800 p-7 flex flex-col justify-center">
-          <p className="text-sm text-gray-400 font-medium mb-2">Left this month</p>
+          <p className="text-sm text-gray-400 font-medium mb-2">Left to invest</p>
           <p className={clsx(
             'text-4xl font-bold tracking-tight tabular-nums',
             leftThis < 0 ? 'text-red-400' : 'text-emerald-400'
           )}>
             {leftThis < 0 ? '-' : ''}{fmtFull(Math.abs(leftAnim))}
           </p>
-          {/* Progress: how much of take-home is spent */}
-          <div className="mt-4 h-2 rounded-full bg-gray-800 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-indigo-500 transition-all duration-700"
-              style={{ width: `${spentPctOfIncome}%` }}
-            />
-          </div>
           <p className="text-xs text-gray-500 mt-3">
             {fmtFull(spentThis)} spent of {fmtFull(takeHome)} take-home · rest is yours to invest
           </p>
