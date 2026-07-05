@@ -25,6 +25,7 @@ export default function Transactions() {
   const [saving, setSaving] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({});
+  const [expandedCat, setExpandedCat] = useState(null);
 
   const fetchMonth = useCallback(async () => {
     setLoadingMonth(true);
@@ -173,23 +174,54 @@ export default function Transactions() {
               {breakdown.map((c) => {
                 const pct = c.budget_amount > 0 ? (c.monthSpent / c.budget_amount) * 100 : 0;
                 const over = c.monthSpent > c.budget_amount && c.budget_amount > 0;
+                const isOpen = expandedCat === c.id;
+                const charges = isOpen
+                  ? monthTxns
+                      .filter((t) => t.category_id === c.id && !t.excluded)
+                      .sort((a, b) => (a.date < b.date ? 1 : -1))
+                  : [];
                 return (
                   <div key={c.id}>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="flex items-center gap-2 text-gray-200">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
-                        {c.name}
-                      </span>
-                      <span className="tabular-nums">
-                        <span className="text-white font-medium">{fmt(c.monthSpent)}</span>
-                        {c.budget_amount > 0 && (
-                          <span className={clsx('ml-1 text-xs', over ? 'text-red-400' : 'text-gray-500')}>
-                            / {fmt(c.budget_amount)}
+                    <button
+                      onClick={() => setExpandedCat(isOpen ? null : c.id)}
+                      className="w-full text-left group"
+                    >
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="flex items-center gap-2 text-gray-200">
+                          <span className="text-gray-600 group-hover:text-gray-400 transition-colors w-3 inline-block">
+                            {isOpen ? '▾' : '▸'}
                           </span>
+                          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: c.color }} />
+                          {c.name}
+                        </span>
+                        <span className="tabular-nums">
+                          <span className="text-white font-medium">{fmt(c.monthSpent)}</span>
+                          {c.budget_amount > 0 && (
+                            <span className={clsx('ml-1 text-xs', over ? 'text-red-400' : 'text-gray-500')}>
+                              / {fmt(c.budget_amount)}
+                            </span>
+                          )}
+                        </span>
+                      </div>
+                      {c.budget_amount > 0 && <ProgressBar pct={pct} />}
+                    </button>
+                    {isOpen && (
+                      <div className="mt-2 ml-6 space-y-1.5 border-l border-gray-800 pl-3">
+                        {charges.length === 0 ? (
+                          <p className="text-xs text-gray-600">No charges</p>
+                        ) : (
+                          charges.map((t) => (
+                            <div key={t.id} className="flex items-center justify-between text-xs gap-2">
+                              <span className="text-gray-400 truncate">
+                                <span className="text-gray-600 mr-2 tabular-nums">{t.date.slice(5)}</span>
+                                {t.merchant_name || t.description || '—'}
+                              </span>
+                              <span className="text-gray-300 tabular-nums whitespace-nowrap">{fmt(t.amount)}</span>
+                            </div>
+                          ))
                         )}
-                      </span>
-                    </div>
-                    {c.budget_amount > 0 && <ProgressBar pct={pct} />}
+                      </div>
+                    )}
                   </div>
                 );
               })}
