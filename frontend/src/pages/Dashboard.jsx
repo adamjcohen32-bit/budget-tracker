@@ -70,6 +70,13 @@ export default function Dashboard() {
   const daysInMonth = daysInMonthET();
   const dailyAvg = dayOfMonth > 0 ? spentThis / dayOfMonth : 0;
   const projectedSpend = dailyAvg * daysInMonth;
+  const daysLeft = daysInMonth - dayOfMonth;
+  const todayLabel = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date());
 
   return (
     <div className="space-y-8">
@@ -77,7 +84,12 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Spent this month, with projected month-end pace */}
         <div className="rounded-2xl bg-gradient-to-br from-indigo-950 to-indigo-900/40 border border-indigo-800/70 p-7">
-          <p className="text-sm text-indigo-300 font-medium mb-2">Spent in {monthName}</p>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm text-indigo-300 font-medium">Spent in {monthName}</p>
+            <p className="text-xs text-indigo-400/70 tabular-nums">
+              {todayLabel} · {daysLeft} {daysLeft === 1 ? 'day' : 'days'} left
+            </p>
+          </div>
           <p className="text-6xl font-bold tracking-tight tabular-nums leading-none text-white">
             {fmtFull(spentAnim)}
           </p>
