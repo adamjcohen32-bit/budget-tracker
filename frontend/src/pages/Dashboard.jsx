@@ -18,6 +18,7 @@ function fmtFull(n) {
 export default function Dashboard() {
   const {
     categories,
+    transactions,
     loading,
     error,
     syncing,
@@ -152,7 +153,11 @@ export default function Dashboard() {
             </div>
             <div className="space-y-3">
               {cats.map((cat) => (
-                <CategoryRow key={cat.id} category={cat} />
+                <CategoryRow
+                  key={cat.id}
+                  category={cat}
+                  charges={transactions.filter((t) => t.category_id === cat.id && !t.excluded)}
+                />
               ))}
             </div>
           </section>
