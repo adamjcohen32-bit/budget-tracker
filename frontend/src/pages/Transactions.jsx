@@ -93,9 +93,15 @@ export default function Transactions() {
     await refresh();
   }
 
-  const filtered = monthTxns.filter((t) =>
-    !search || (t.merchant_name || t.description || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = monthTxns
+    .filter((t) =>
+      !search || (t.merchant_name || t.description || '').toLowerCase().includes(search.toLowerCase())
+    )
+    // Most recent first: by date, then by when it was logged
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return (a.created_at || '') < (b.created_at || '') ? 1 : -1;
+    });
 
   // Per-category breakdown for the selected month (for adjusting limits)
   const monthTotal = monthTxns.filter((t) => !t.excluded).reduce((s, t) => s + Number(t.amount), 0);
