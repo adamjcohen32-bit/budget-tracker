@@ -54,6 +54,7 @@ export const transactionsApi = {
     api.patch(`/api/transactions/${id}/category`, { category_id }).then(r => r.data),
   setExcluded: (id, excluded) =>
     api.patch(`/api/transactions/${id}/excluded`, { excluded }).then(r => r.data),
+  update: (id, data) => api.patch(`/api/transactions/${id}`, data).then(r => r.data),
   remove: (id) => api.delete(`/api/transactions/${id}`),
 };
 

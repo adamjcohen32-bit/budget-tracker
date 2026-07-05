@@ -31,3 +31,22 @@ export function daysLeftInMonthET(d = new Date()) {
 export function monthNameET(d = new Date()) {
   return new Intl.DateTimeFormat('en-US', { timeZone: TZ, month: 'long' }).format(d);
 }
+
+// Date range + label for a month, `offset` from the current Eastern month
+// (0 = this month, -1 = last month, etc.)
+export function monthRangeET(offset = 0) {
+  const { year, month } = etParts(); // month is 1-based
+  let y = year;
+  let m = month + offset;
+  while (m < 1) { m += 12; y -= 1; }
+  while (m > 12) { m -= 12; y += 1; }
+  const pad = (n) => String(n).padStart(2, '0');
+  const daysIn = new Date(y, m, 0).getDate();
+  return {
+    start: `${y}-${pad(m)}-01`,
+    end: `${y}-${pad(m)}-${pad(daysIn)}`,
+    label: new Date(y, m - 1, 1).toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+    year: y,
+    month: m,
+  };
+}

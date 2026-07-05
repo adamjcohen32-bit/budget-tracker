@@ -61,6 +61,34 @@ router.post('/', async (req, res) => {
   res.status(201).json(data);
 });
 
+// Edit a submitted transaction (amount, note, date, category)
+router.patch('/:id', async (req, res) => {
+  const allowed = ['amount', 'merchant_name', 'description', 'date', 'category_id'];
+  const updates = {};
+  for (const k of allowed) {
+    if (k in req.body) updates[k] = req.body[k];
+  }
+  if ('amount' in updates) {
+    if (isNaN(Number(updates.amount))) {
+      return res.status(400).json({ error: 'amount must be a number' });
+    }
+    updates.amount = Number(updates.amount);
+  }
+  if (Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: 'no editable fields provided' });
+  }
+
+  const { data, error } = await supabase
+    .from('transactions')
+    .update(updates)
+    .eq('id', req.params.id)
+    .select()
+    .single();
+
+  if (error) return res.status(500).json({ error: error.message });
+  res.json(data);
+});
+
 // Re-categorize a transaction
 router.patch('/:id/category', async (req, res) => {
   const { category_id } = req.body;
