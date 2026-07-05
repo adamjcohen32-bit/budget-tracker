@@ -25,19 +25,23 @@ router.get('/', async (req, res) => {
 // and defaults the date to today (Eastern) — handy for the Siri Shortcut,
 // which just sends { amount, category_name, note }.
 router.post('/', async (req, res) => {
-  const { amount, merchant_name, description, note, date } = req.body;
+  const { amount, merchant_name, description, date } = req.body;
   let { category_id } = req.body;
+  // Accept note/Note and category_name/Category_Name case-insensitively (the
+  // Siri Shortcut sends capitalized keys).
+  const note = req.body.note ?? req.body.Note;
+  const categoryName = req.body.category_name ?? req.body.Category_name ?? req.body.category_Name;
   if (amount == null || isNaN(Number(amount))) {
     return res.status(400).json({ error: 'amount required' });
   }
 
   // Resolve category by name if an id wasn't provided
-  if (!category_id && req.body.category_name) {
+  if (!category_id && categoryName) {
     const { data: cat } = await supabase
       .from('categories')
       .select('id')
       .eq('is_active', true)
-      .ilike('name', req.body.category_name.trim())
+      .ilike('name', String(categoryName).trim())
       .maybeSingle();
     if (cat) category_id = cat.id;
   }
